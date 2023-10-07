@@ -6,7 +6,7 @@ import net.minecraft.src.game.item.Item;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommandGiveAutocomplete implements CommandAutocomplete {
+public class CommandGiveAutocomplete {
     final List<String> blankList = new ArrayList<>();
 
     List<String> getItemsThatStartWith(String with) {
@@ -22,7 +22,6 @@ public class CommandGiveAutocomplete implements CommandAutocomplete {
         return items;
     }
 
-    @Override
     public List<String> getCommandSuggestions(GuiChat gui) {
         int commandArgIndex = AutocompleteModClient.getCursorArgIndex(gui.chat.text, gui.chat.cursorPosition);
         if (commandArgIndex != 1) {

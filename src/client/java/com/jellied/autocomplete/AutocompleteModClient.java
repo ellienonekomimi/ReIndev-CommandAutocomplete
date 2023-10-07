@@ -1,12 +1,15 @@
 package com.jellied.autocomplete;
 
 import com.fox2code.foxloader.loader.ClientMod;
+import com.fox2code.foxloader.loader.ModLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.gui.Gui;
 import net.minecraft.src.client.gui.GuiChat;
 import net.minecraft.src.client.gui.ScaledResolution;
+import org.lwjgl.Sys;
 
 import java.awt.*;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +21,8 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
 
     private static final int offsetFromChatBar = 22 - 4 - 1;
 
-    public static final Map<String, CommandAutocomplete> commandSpecificAutocompletion = new HashMap<>();
+    public static final Map<String, Object> commandSpecificAutocompletion = new HashMap<>();
+    public static Map<String, Method> getSuggestionMethods = new HashMap<>();
 
     // For cycling thru commands with tab
     private static int currentSuggestionCycleIndex = 0;
@@ -34,17 +38,17 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
 
 
     // chewsday init
-    public void onPreInit () {
-        // todo: make some kind of interface for other mods to use this for their own commands, not sure how i'd do that tho
-        // i'll just leave this hashmap public if anyone knows a way
-        // all you'd need to do is put your command autocomplete object in the map
-
-        commandSpecificAutocompletion.put("/give", new CommandGiveAutocomplete());
-        commandSpecificAutocompletion.put("/weather", new CommandWeatherAutocomplete());
-        commandSpecificAutocompletion.put("/effect", new CommandEffectAutocomplete());
-        commandSpecificAutocompletion.put("/time", new CommandTimeAutocomplete());
+    public void onPreInit() {
+        addAutocomplete("/give", new CommandGiveAutocomplete());
+        addAutocomplete("/weather", new CommandWeatherAutocomplete());
+        addAutocomplete("/effect", new CommandEffectAutocomplete());
+        addAutocomplete("/time", new CommandTimeAutocomplete());
 
         InputHandler.initKeys();
+    }
+
+    public void addAutocomplete(String command, Object commandAutocomplete) {
+        commandSpecificAutocompletion.put(command, commandAutocomplete);
     }
 
 
@@ -177,7 +181,6 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
 
         int drawAtY = yPosition - 12; // Start from the bottom
         for (int i = suggestionBeginIndex + suggestionAmount; i >= suggestionBeginIndex; i--) {
-            System.out.println(suggestionBeginIndex + " " + suggestionAmount);
             String suggestion = suggestions.get(i);
             int textColor = i == currentSuggestionCycleIndex ? Color.YELLOW.getRGB() : Color.WHITE.getRGB();
 
@@ -190,6 +193,7 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
         currentChatStringListeningTo = typedSuggestion;
     }
 
+    @SuppressWarnings("unchecked")
     public static void autocomplete(List<String> commands) {
         if (minecraft.currentScreen == null | !(minecraft.currentScreen instanceof GuiChat)) {
             return;
@@ -198,14 +202,37 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
         GuiChat gui = (GuiChat) minecraft.currentScreen;
         String[] commandArgs = gui.chat.text.split(" ");
         int commandArgIndex = getCursorArgIndex(gui.chat.text, gui.chat.cursorPosition);
-        CommandAutocomplete cmd = commandSpecificAutocompletion.get(commandArgs[0]);
+        Object cmd = commandSpecificAutocompletion.get(commandArgs[0]);
 
         if (commandArgIndex == 0) {
             drawSuggestions(gui, commands);
+            return;
         }
-        else if (cmd != null) {
-            List<String> suggestions = commandSpecificAutocompletion.get(commandArgs[0]).getCommandSuggestions(gui);
-            drawSuggestions(gui, suggestions);
+
+        if (cmd == null) {
+            return;
+        }
+
+        String cmdClassName = cmd.getClass().getName();
+        if (getSuggestionMethods.get(cmdClassName) != null) {
+            try {
+                List<String> suggestions = (List<String>) getSuggestionMethods.get(cmdClassName).invoke(cmd, gui);
+                drawSuggestions(gui, suggestions);
+            }
+            catch (Exception e) {
+                System.out.println("Exception when attempting to call getCommandSuggestions on class " + cmd.getClass() + ": ");
+                e.printStackTrace();
+            }
+        }
+        else {
+            try {
+                Method getSuggestions = cmd.getClass().getMethod("getCommandSuggestions", GuiChat.class);
+                getSuggestionMethods.put(cmdClassName, getSuggestions);
+            }
+            catch (Exception e) {
+                System.out.println("Exception when attempting to get getCommandSuggestions from class " + cmd.getClass() + ": ");
+                e.printStackTrace();
+            }
         }
     }
 }

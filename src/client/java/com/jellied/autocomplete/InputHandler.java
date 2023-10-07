@@ -1,5 +1,7 @@
 package com.jellied.autocomplete;
 
+import com.fox2code.foxloader.loader.ClientMod;
+import com.fox2code.foxloader.loader.ModContainer;
 import org.lwjgl.input.Keyboard;
 
 import java.util.HashMap;

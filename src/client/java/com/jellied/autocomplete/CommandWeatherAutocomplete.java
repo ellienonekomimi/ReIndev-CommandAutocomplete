@@ -5,7 +5,7 @@ import net.minecraft.src.client.gui.GuiChat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommandWeatherAutocomplete implements CommandAutocomplete {
+public class CommandWeatherAutocomplete {
     final List<String> forecasts =  new ArrayList<>();
     final List<String> blankList = new ArrayList<>();
 
@@ -15,7 +15,6 @@ public class CommandWeatherAutocomplete implements CommandAutocomplete {
         forecasts.add("thunder");
     }
 
-    @Override
     public List<String> getCommandSuggestions(GuiChat gui) {
         int commandArgIndex = AutocompleteModClient.getCursorArgIndex(gui.chat.text, gui.chat.cursorPosition);
         if (commandArgIndex != 1) {

@@ -6,7 +6,7 @@ import net.minecraft.src.game.effect.Effect;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommandEffectAutocomplete implements CommandAutocomplete {
+public class CommandEffectAutocomplete {
     final List<String> blankList = new ArrayList<>();
 
     public List<String> getEffectsThatStartWith(String with) {
@@ -26,7 +26,6 @@ public class CommandEffectAutocomplete implements CommandAutocomplete {
         return effects;
     }
 
-    @Override
     public List<String> getCommandSuggestions(GuiChat gui) {
         int commandArgIndex = AutocompleteModClient.getCursorArgIndex(gui.chat.text, gui.chat.cursorPosition);
         if (commandArgIndex != 1) {

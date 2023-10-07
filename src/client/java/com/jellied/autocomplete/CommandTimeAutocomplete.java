@@ -5,7 +5,7 @@ import net.minecraft.src.client.gui.GuiChat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommandTimeAutocomplete implements CommandAutocomplete {
+public class CommandTimeAutocomplete {
     final List<String> times =  new ArrayList<>();
     final List<String> operations = new ArrayList<>();
     final List<String> blankList = new ArrayList<>();
@@ -20,7 +20,6 @@ public class CommandTimeAutocomplete implements CommandAutocomplete {
         times.add("night");
     }
 
-    @Override
     public List<String> getCommandSuggestions(GuiChat gui) {
         int commandArgIndex = AutocompleteModClient.getCursorArgIndex(gui.chat.text, gui.chat.cursorPosition);
         if (commandArgIndex == 1) {
