@@ -1,0 +1,29 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io/' }
+    }
+    dependencies {
+        classpath('com.github.Fox2Code.FoxLoader:dev:1.2.19')
+    }
+}
+
+
+
+apply plugin: 'foxloader.dev'
+
+version '0.1.0'
+
+foxloader {
+    // forceReload = true
+    modId = "jelliedautocomplete"
+    modName = "Command Autocomplete"
+    modVersion = project.version
+    modDesc = "Adds autocomplete to slash commands"
+    clientMod = "com.jellied.autocomplete.AutocompleteModClient"
+    // serverMod = "com.jellied.autocomplete.AutocompleteModServer"
+    // Development tools don't like that both client and server define
+    // the same classes, so uncomment to disable the side inclusion.
+    // includeClient = false
+    // includeServer = false
+}
