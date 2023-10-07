@@ -15,11 +15,24 @@ public class CommandWeatherAutocomplete {
         forecasts.add("thunder");
     }
 
+    public List<String> getEntriesThatBeginWith(List<String> listToCheck, String with) {
+        List<String> entries = new ArrayList<>();
+
+        for (String entry : listToCheck) {
+            if (entry != null && entry.startsWith(with)) {
+                entries.add(entry);
+            }
+        }
+
+        return entries;
+    }
+
     public List<String> getCommandSuggestions(GuiChat gui, int commandArgIndex) {
         if (commandArgIndex != 1) {
             return blankList;
         }
 
-        return forecasts;
+        String typedWeather = gui.chat.text.replaceFirst("/weather ", "");
+        return getEntriesThatBeginWith(forecasts, typedWeather);
     }
 }

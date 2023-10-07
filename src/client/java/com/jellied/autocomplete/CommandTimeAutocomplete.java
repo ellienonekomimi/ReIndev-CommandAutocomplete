@@ -20,14 +20,28 @@ public class CommandTimeAutocomplete {
         times.add("night");
     }
 
+    public List<String> getEntriesThatBeginWith(List<String> listToCheck, String with) {
+        List<String> entries = new ArrayList<>();
+
+        for (String entry : listToCheck) {
+            if (entry != null && entry.startsWith(with)) {
+                entries.add(entry);
+            }
+        }
+
+        return entries;
+    }
+
     public List<String> getCommandSuggestions(GuiChat gui, int commandArgIndex) {
         if (commandArgIndex == 1) {
-            return operations;
+            String typedOperation = gui.chat.text.replaceFirst("/time ", "");
+            return getEntriesThatBeginWith(operations, typedOperation);
         }
 
         String[] commandArgs = gui.chat.text.split(" ");
         if (commandArgIndex == 2 && commandArgs[1].equals("set")) {
-            return times;
+            String typedTime = gui.chat.text.replaceFirst("/time set ", "");
+            return getEntriesThatBeginWith(times, typedTime);
         }
 
         return blankList;
