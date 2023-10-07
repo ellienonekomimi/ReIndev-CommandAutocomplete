@@ -26,8 +26,7 @@ public class CommandEffectAutocomplete {
         return effects;
     }
 
-    public List<String> getCommandSuggestions(GuiChat gui) {
-        int commandArgIndex = AutocompleteModClient.getCursorArgIndex(gui.chat.text, gui.chat.cursorPosition);
+    public List<String> getCommandSuggestions(GuiChat gui, int commandArgIndex) {
         if (commandArgIndex != 1) {
             return blankList;
         }

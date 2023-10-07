@@ -216,7 +216,7 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
         String cmdClassName = cmd.getClass().getName();
         if (getSuggestionMethods.get(cmdClassName) != null) {
             try {
-                List<String> suggestions = (List<String>) getSuggestionMethods.get(cmdClassName).invoke(cmd, gui);
+                List<String> suggestions = (List<String>) getSuggestionMethods.get(cmdClassName).invoke(cmd, gui, commandArgIndex);
                 drawSuggestions(gui, suggestions);
             }
             catch (Exception e) {
@@ -226,7 +226,7 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
         }
         else {
             try {
-                Method getSuggestions = cmd.getClass().getMethod("getCommandSuggestions", GuiChat.class);
+                Method getSuggestions = cmd.getClass().getMethod("getCommandSuggestions", GuiChat.class, int.class);
                 getSuggestionMethods.put(cmdClassName, getSuggestions);
             }
             catch (Exception e) {
