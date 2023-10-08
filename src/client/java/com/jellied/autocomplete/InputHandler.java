@@ -1,7 +1,5 @@
 package com.jellied.autocomplete;
 
-import com.fox2code.foxloader.loader.ClientMod;
-import com.fox2code.foxloader.loader.ModContainer;
 import org.lwjgl.input.Keyboard;
 
 import java.util.HashMap;
@@ -10,34 +8,53 @@ import java.util.Map;
 
 public class InputHandler {
     static Map<Integer, Boolean> keyStates = new HashMap<>();
+    static long timeArrowsHeldDown = 0;
+    static int heldCycleSpeed = 500;
+
+    static long lastCycle = 0;
 
     public static void initKeys() {
-        keyStates.put(Keyboard.KEY_UP, true);
-        keyStates.put(Keyboard.KEY_DOWN, true);
         keyStates.put(Keyboard.KEY_TAB, true);
     }
 
     public static void detectInput(List<String> suggestions) {
+        // Arrow keys
         int cycleDirection = 0;
 
-        if (Keyboard.isKeyDown(Keyboard.KEY_UP) && keyStates.get(Keyboard.KEY_UP)) {
+        if (Keyboard.isKeyDown(Keyboard.KEY_UP)) {
             cycleDirection++;
-            keyStates.put(Keyboard.KEY_UP, false);
-        }
-        else if (!Keyboard.isKeyDown(Keyboard.KEY_UP)) {
-            keyStates.put(Keyboard.KEY_UP, true);
         }
 
-        if (Keyboard.isKeyDown(Keyboard.KEY_DOWN) && keyStates.get(Keyboard.KEY_DOWN)) {
+        if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
             cycleDirection--;
-            keyStates.put(Keyboard.KEY_DOWN, false);
-        }
-        else if (!Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
-            keyStates.put(Keyboard.KEY_DOWN, true);
         }
 
-        AutocompleteModClient.cycleSuggestionIndex(suggestions, -cycleDirection);
+        if (cycleDirection == 0) {
+            timeArrowsHeldDown = System.currentTimeMillis();
+            lastCycle = timeArrowsHeldDown;
+        }
 
+        long timeHeld = System.currentTimeMillis() - timeArrowsHeldDown;
+        if (timeHeld >= 3000) {
+            heldCycleSpeed = 40;
+        }
+        else if (timeHeld >= 1750) {
+            heldCycleSpeed = 100;
+        }
+        else if (timeHeld >= 1000) {
+            heldCycleSpeed = 150;
+        }
+        else {
+            heldCycleSpeed = 250;
+        }
+
+        long timeSinceLastCycle = System.currentTimeMillis() - lastCycle;
+        if (cycleDirection != 0 && (timeSinceLastCycle >= heldCycleSpeed | lastCycle == timeArrowsHeldDown)) {
+            lastCycle = System.currentTimeMillis();
+            AutocompleteModClient.cycleSuggestionIndex(suggestions, -cycleDirection);
+        }
+
+        // Tab
         if (Keyboard.isKeyDown(Keyboard.KEY_TAB) && keyStates.get(Keyboard.KEY_TAB)) {
             AutocompleteModClient.autocompleteCurrentSuggestion();
             keyStates.put(Keyboard.KEY_TAB, false);

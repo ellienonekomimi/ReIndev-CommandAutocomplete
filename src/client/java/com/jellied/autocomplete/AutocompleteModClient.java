@@ -1,12 +1,10 @@
 package com.jellied.autocomplete;
 
 import com.fox2code.foxloader.loader.ClientMod;
-import com.fox2code.foxloader.loader.ModLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.gui.Gui;
 import net.minecraft.src.client.gui.GuiChat;
 import net.minecraft.src.client.gui.ScaledResolution;
-import org.lwjgl.Sys;
 
 import java.awt.*;
 import java.lang.reflect.Method;
@@ -24,6 +22,7 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
     public static final Map<String, Object> commandSpecificAutocompletion = new HashMap<>();
     public static Map<String, Method> getSuggestionMethods = new HashMap<>();
 
+
     // For cycling thru commands with tab
     private static int currentSuggestionCycleIndex = 0;
     private static String currentChatStringListeningTo = null;
@@ -34,6 +33,7 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
 
     // Colors
     private static final int BLACK = new Color(0, 0, 0, (int) (255 * 0.75)).getRGB();
+    private static final int WHITE = new Color(255, 255, 255).getRGB();
 
 
 
@@ -50,7 +50,6 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
     public void addAutocomplete(String command, Object commandAutocomplete) {
         commandSpecificAutocompletion.put(command, commandAutocomplete);
     }
-
 
 
     // Input-related methods
@@ -171,22 +170,37 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
 
         int suggestionAmount = Math.min(suggestions.size() - 1, 7);
 
-        int xPosition = getXPadding(typedSuggestion, gui.chat.cursorPosition); // The start of the current "chunk" of text
-        int yPosition = res.getScaledHeight() - (offsetFromChatBar); // Just above the chat bar
+        // Background
+        int backgroundPositionX = getXPadding(typedSuggestion, gui.chat.cursorPosition); // The start of the current "chunk" of text
+        int backgroundPositionY = res.getScaledHeight() - (offsetFromChatBar); // Just above the chat bar
 
         int backgroundSizeX = getMaxSuggestionWidth(suggestions) + 6;
         int backgroundSizeY = (suggestionAmount + 1) * 12;
 
-        Gui.drawRect(xPosition - 2, yPosition, xPosition + backgroundSizeX, yPosition - backgroundSizeY - 2, BLACK);
+        Gui.drawRect(backgroundPositionX - 2, backgroundPositionY, backgroundPositionX + backgroundSizeX, backgroundPositionY - backgroundSizeY - 2, BLACK);
 
-        int drawAtY = yPosition - 12; // Start from the bottom
+        // Scroll bar
+        double scrollBarSizeScale = 1;
+        if (suggestions.size() > 8) {
+            scrollBarSizeScale = ((double) suggestionAmount + 1) / ((double) (suggestions.size()));
+        }
+
+        int scrollBarPositionX = backgroundPositionX + backgroundSizeX;
+        int scrollBarPositionY = backgroundPositionY - backgroundSizeY + ((int) Math.floor(((double) 12 * suggestionBeginIndex) * scrollBarSizeScale));
+
+        int scrollBarSizeY = (int) Math.ceil((double) (backgroundSizeY) * scrollBarSizeScale);
+
+        Gui.drawRect(scrollBarPositionX - 3, scrollBarPositionY - 2, scrollBarPositionX, scrollBarPositionY + scrollBarSizeY, WHITE);
+
+        // Suggestions
+        int drawAtY = backgroundPositionY - 12; // Start from the bottom
         for (int i = suggestionBeginIndex + suggestionAmount; i >= suggestionBeginIndex; i--) {
             String suggestion = suggestions.get(i);
             int textColor = i == currentSuggestionCycleIndex ? Color.YELLOW.getRGB() : Color.WHITE.getRGB();
 
             currentlySelectedSuggestion = i == currentSuggestionCycleIndex ? suggestion : currentlySelectedSuggestion;
 
-            minecraft.fontRenderer.drawStringWithShadow(suggestion, xPosition, drawAtY, textColor);
+            minecraft.fontRenderer.drawStringWithShadow(suggestion, backgroundPositionX, drawAtY, textColor);
             drawAtY -= 12; // Work our way up
         }
 
