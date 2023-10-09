@@ -173,6 +173,9 @@ public class AutocompleteModClient extends AutocompleteMod implements ClientMod 
         // Background
         int backgroundPositionX = getXPadding(typedSuggestion, gui.chat.cursorPosition); // The start of the current "chunk" of text
         int backgroundPositionY = res.getScaledHeight() - (offsetFromChatBar); // Just above the chat bar
+        if (minecraft.theWorld.multiplayerWorld) {
+            backgroundPositionY -= offsetFromChatBar - 1;
+        }
 
         int backgroundSizeX = getMaxSuggestionWidth(suggestions) + 6;
         int backgroundSizeY = (suggestionAmount + 1) * 12;
